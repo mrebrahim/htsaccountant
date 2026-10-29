@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Cairo", ui-sans-serif, system-ui, sans-serif;
+  --color-brand-50: #eef4ff;
+  --color-brand-100: #dbe6fe;
+  --color-brand-500: #3b6cf6;
+  --color-brand-600: #2554e8;
+  --color-brand-700: #1d43c7;
+  --color-brand-900: #172554;
+}
+
+html, body, #root { height: 100%; }
+body {
+  @apply bg-slate-50 text-slate-800 antialiased;
+}
+/* Keep numbers, emails and ids readable inside RTL text */
+.ltr { direction: ltr; unicode-bidi: isolate; display: inline-block; }
+input[type="date"], input[type="month"], input[type="number"], input[type="email"], input[type="password"] { direction: ltr; text-align: right; }
+.recharts-wrapper { direction: ltr; }
+.recharts-legend-item-text, .recharts-tooltip-wrapper { direction: rtl; }

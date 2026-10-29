@@ -1,0 +1,12 @@
+-- The app talks to Postgres directly from the server (service connection),
+-- so lock every table against the public Supabase REST API.
+ALTER TABLE "users" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "customers" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "ad_accounts" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "ad_fundings" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "ad_spend" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "campaigns" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "transactions" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "employees" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "employee_payments" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "settings" ENABLE ROW LEVEL SECURITY;
