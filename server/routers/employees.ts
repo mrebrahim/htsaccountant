@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { asc, desc, eq, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
-import { router, permitted } from "../trpc";
-import { schema } from "../db";
-import { EMPLOYEE_PAYMENT_TYPES, EMPLOYEE_PAYMENT_LABELS, monthLabel, type EmployeePaymentType } from "../../shared/constants";
+import { router, permitted } from "../trpc.js";
+import { schema } from "../db/index.js";
+import { EMPLOYEE_PAYMENT_TYPES, EMPLOYEE_PAYMENT_LABELS, monthLabel, type EmployeePaymentType } from "../../shared/constants.js";
 
 const e = schema.employees;
 const p = schema.employeePayments;

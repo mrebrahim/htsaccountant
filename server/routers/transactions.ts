@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { and, desc, eq, inArray, sql, ilike, type SQL } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
-import { router, permitted } from "../trpc";
-import { schema } from "../db";
-import { TRANSACTION_CATEGORIES, TRANSACTION_TYPES, categoriesForType } from "../../shared/constants";
+import { router, permitted } from "../trpc.js";
+import { schema } from "../db/index.js";
+import { TRANSACTION_CATEGORIES, TRANSACTION_TYPES, categoriesForType } from "../../shared/constants.js";
 
 const t = schema.transactions;
 

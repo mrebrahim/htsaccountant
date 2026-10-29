@@ -2,9 +2,9 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import superjson from "superjson";
 import { eq } from "drizzle-orm";
-import { db, schema } from "./db";
-import { readSession, SESSION_COOKIE } from "./auth";
-import type { Permission } from "../shared/constants";
+import { db, schema } from "./db/index.js";
+import { readSession, SESSION_COOKIE } from "./auth.js";
+import type { Permission } from "../shared/constants.js";
 
 export async function createContext({ req, res }: CreateExpressContextOptions) {
   const token = req.cookies?.[SESSION_COOKIE] as string | undefined;

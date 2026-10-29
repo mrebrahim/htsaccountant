@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { and, desc, eq, isNotNull, sql, type SQL } from "drizzle-orm";
-import { router, permitted, adminProcedure } from "../trpc";
-import { schema } from "../db";
-import { fbConfig, fbCampaigns } from "../facebook";
+import { router, permitted, adminProcedure } from "../trpc.js";
+import { schema } from "../db/index.js";
+import { fbConfig, fbCampaigns } from "../facebook.js";
 
 const c = schema.campaigns;
 

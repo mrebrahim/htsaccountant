@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { router, adminProcedure, protectedProcedure } from "../trpc";
-import { getSetting, setSetting, fbConfig, listFbAdAccounts } from "../facebook";
+import { router, adminProcedure, protectedProcedure } from "../trpc.js";
+import { getSetting, setSetting, fbConfig, listFbAdAccounts } from "../facebook.js";
 
 export const settingsRouter = router({
   /** Non-sensitive settings needed by every user (company name, currency). */

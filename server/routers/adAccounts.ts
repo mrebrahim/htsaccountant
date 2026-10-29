@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { asc, desc, eq, sql, type SQL } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
-import { router, permitted, adminProcedure } from "../trpc";
-import { schema, type DB } from "../db";
-import { AD_ACCOUNT_OWNERSHIP } from "../../shared/constants";
-import { fbConfig, fbMonthlySpend, listFbAdAccounts, fbAccountInfo, FB_STATUS } from "../facebook";
+import { router, permitted, adminProcedure } from "../trpc.js";
+import { schema, type DB } from "../db/index.js";
+import { AD_ACCOUNT_OWNERSHIP } from "../../shared/constants.js";
+import { fbConfig, fbMonthlySpend, listFbAdAccounts, fbAccountInfo, FB_STATUS } from "../facebook.js";
 
 const a = schema.adAccounts;
 

@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { eq, sql } from "drizzle-orm";
-import { router, publicProcedure, protectedProcedure } from "../trpc";
-import { schema } from "../db";
-import { hashPassword, verifyPassword, setSessionCookie, clearSessionCookie } from "../auth";
-import { PERMISSIONS } from "../../shared/constants";
+import { router, publicProcedure, protectedProcedure } from "../trpc.js";
+import { schema } from "../db/index.js";
+import { hashPassword, verifyPassword, setSessionCookie, clearSessionCookie } from "../auth.js";
+import { PERMISSIONS } from "../../shared/constants.js";
 
 const publicUser = (u: typeof schema.users.$inferSelect) => ({
   id: u.id,

@@ -1,6 +1,6 @@
 import path from "node:path";
 import express from "express";
-import { app } from "./app";
+import { app } from "./app.js";
 
 if (process.env.NODE_ENV === "production") {
   const dist = path.resolve(process.cwd(), "dist");

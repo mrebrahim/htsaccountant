@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { and, asc, eq, ne, sql } from "drizzle-orm";
-import { router, adminProcedure } from "../trpc";
-import { schema } from "../db";
-import { hashPassword } from "../auth";
-import { PERMISSIONS, ROLES } from "../../shared/constants";
+import { router, adminProcedure } from "../trpc.js";
+import { schema } from "../db/index.js";
+import { hashPassword } from "../auth.js";
+import { PERMISSIONS, ROLES } from "../../shared/constants.js";
 
 const userInput = z.object({
   name: z.string().min(2),

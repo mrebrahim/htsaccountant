@@ -12,7 +12,7 @@ import {
   uniqueIndex,
   index,
 } from "drizzle-orm/pg-core";
-import type { Permission } from "../../shared/constants";
+import type { Permission } from "../../shared/constants.js";
 
 const money = (name: string) => numeric(name, { precision: 14, scale: 2, mode: "number" });
 const createdAt = () => timestamp("created_at", { withTimezone: true }).notNull().defaultNow();

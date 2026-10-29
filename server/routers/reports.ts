@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { and, desc, eq, sql, type SQL } from "drizzle-orm";
-import { router, permitted } from "../trpc";
-import { schema } from "../db";
-import { transactionFilter, transactionWhere } from "./transactions";
-import { accountBalances } from "./adAccounts";
+import { router, permitted } from "../trpc.js";
+import { schema } from "../db/index.js";
+import { transactionFilter, transactionWhere } from "./transactions.js";
+import { accountBalances } from "./adAccounts.js";
 
 const t = schema.transactions;
 

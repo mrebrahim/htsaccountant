@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
-import type { DB } from "./db";
-import { schema } from "./db";
+import type { DB } from "./db/index.js";
+import { schema } from "./db/index.js";
 
 const DEFAULT_VERSION = "v21.0";
 

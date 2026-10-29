@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { asc, desc, eq, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
-import { router, permitted } from "../trpc";
-import { schema } from "../db";
-import { accountBalances } from "./adAccounts";
+import { router, permitted } from "../trpc.js";
+import { schema } from "../db/index.js";
+import { accountBalances } from "./adAccounts.js";
 
 const c = schema.customers;
 const t = schema.transactions;
