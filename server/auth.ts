@@ -1,9 +1,8 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import type { Response } from "express";
 
 export const SESSION_COOKIE = "hts_session";
-const MAX_AGE_MS = 1000 * 60 * 60 * 24 * 7;
+const MAX_AGE_S = 60 * 60 * 24 * 7;
 
 function secret() {
   const s = process.env.JWT_SECRET;
@@ -23,17 +22,24 @@ export function readSession(token: string): { userId: number } | null {
   }
 }
 
-export function setSessionCookie(res: Response, userId: number) {
-  const token = jwt.sign({ sub: String(userId) }, secret(), { expiresIn: MAX_AGE_MS / 1000 });
-  res.cookie(SESSION_COOKIE, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production" || !!process.env.VERCEL,
-    maxAge: MAX_AGE_MS,
-    path: "/",
-  });
+export function readCookie(header: string | null, name: string) {
+  for (const part of header?.split(";") ?? []) {
+    const [k, ...v] = part.trim().split("=");
+    if (k === name) return decodeURIComponent(v.join("="));
+  }
+  return undefined;
 }
 
-export function clearSessionCookie(res: Response) {
-  res.clearCookie(SESSION_COOKIE, { path: "/" });
+function cookie(value: string, maxAge: number) {
+  const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
+  return `${SESSION_COOKIE}=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure}`;
+}
+
+export function setSessionCookie(headers: Headers, userId: number) {
+  const token = jwt.sign({ sub: String(userId) }, secret(), { expiresIn: MAX_AGE_S });
+  headers.append("Set-Cookie", cookie(token, MAX_AGE_S));
+}
+
+export function clearSessionCookie(headers: Headers) {
+  headers.append("Set-Cookie", cookie("", 0));
 }

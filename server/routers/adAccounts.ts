@@ -1,10 +1,9 @@
 import { z } from "zod";
 import { asc, desc, eq, sql, type SQL } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
-import { router, permitted, adminProcedure } from "../trpc.js";
-import { schema, type DB } from "../db/index.js";
-import { AD_ACCOUNT_OWNERSHIP } from "../../shared/constants.js";
-import { fbConfig, fbMonthlySpend, listFbAdAccounts, fbAccountInfo, FB_STATUS } from "../facebook.js";
+import { router, permitted } from "../trpc";
+import { schema, type DB } from "../db";
+import { AD_ACCOUNT_OWNERSHIP } from "../../shared/constants";
 
 const a = schema.adAccounts;
 
@@ -30,28 +29,6 @@ export async function accountBalances(db: DB, where?: SQL) {
     .where(where)
     .orderBy(asc(a.name));
   return rows.map((r) => ({ ...r, balance: r.funded - r.spend }));
-}
-
-async function syncAccountSpend(db: DB, cfg: { token: string; version: string }, accountId: number) {
-  const [acc] = await db.select().from(a).where(eq(a.id, accountId));
-  if (!acc) throw new TRPCError({ code: "NOT_FOUND", message: "الحساب الإعلاني غير موجود" });
-  if (!acc.fbAccountId) throw new TRPCError({ code: "BAD_REQUEST", message: `الحساب "${acc.name}" غير مرتبط بمعرّف فيسبوك` });
-
-  const [info, months] = await Promise.all([fbAccountInfo(cfg, acc.fbAccountId), fbMonthlySpend(cfg, acc.fbAccountId)]);
-  for (const [month, spend] of months) {
-    await db
-      .insert(schema.adSpend)
-      .values({ adAccountId: acc.id, month, spend, source: "facebook" })
-      .onConflictDoUpdate({
-        target: [schema.adSpend.adAccountId, schema.adSpend.month],
-        set: { spend, source: "facebook", updatedAt: new Date() },
-      });
-  }
-  await db
-    .update(a)
-    .set({ currency: info.currency, accountStatus: FB_STATUS[info.account_status] ?? String(info.account_status), lastSyncedAt: new Date() })
-    .where(eq(a.id, acc.id));
-  return { months: months.size, total: [...months.values()].reduce((s, v) => s + v, 0) };
 }
 
 const accountInput = z.object({
@@ -136,7 +113,7 @@ export const adAccountsRouter = router({
             .insert(schema.transactions)
             .values({
               type: "expense",
-              category: "campaign",
+              category: "ad_spend",
               amount: input.amount,
               date: input.date,
               description: `تمويل الحساب الإعلاني: ${acc.name}${input.note ? ` - ${input.note}` : ""}`,
@@ -178,49 +155,4 @@ export const adAccountsRouter = router({
     await ctx.db.delete(schema.adSpend).where(eq(schema.adSpend.id, input.id));
     return { ok: true };
   }),
-
-  // ---- Facebook API (admins only) ----
-
-  syncSpend: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
-    const cfg = await fbConfig(ctx.db);
-    return syncAccountSpend(ctx.db, cfg, input.id);
-  }),
-
-  syncAll: adminProcedure.mutation(async ({ ctx }) => {
-    const cfg = await fbConfig(ctx.db);
-    const accounts = await ctx.db.select().from(a);
-    const results: { name: string; ok: boolean; error?: string }[] = [];
-    for (const acc of accounts.filter((x) => x.fbAccountId)) {
-      try {
-        await syncAccountSpend(ctx.db, cfg, acc.id);
-        results.push({ name: acc.name, ok: true });
-      } catch (e) {
-        results.push({ name: acc.name, ok: false, error: (e as Error).message });
-      }
-    }
-    return results;
-  }),
-
-  fbAvailable: adminProcedure.query(async ({ ctx }) => {
-    const cfg = await fbConfig(ctx.db);
-    const [remote, local] = await Promise.all([listFbAdAccounts(cfg), ctx.db.select({ fb: a.fbAccountId }).from(a)]);
-    const linked = new Set(local.map((l) => l.fb));
-    return remote.map((r) => ({
-      fbAccountId: r.account_id,
-      name: r.name,
-      currency: r.currency,
-      status: FB_STATUS[r.account_status] ?? String(r.account_status),
-      amountSpent: Number(r.amount_spent) / 100,
-      imported: linked.has(r.account_id),
-    }));
-  }),
-
-  fbImport: adminProcedure
-    .input(z.object({ accounts: z.array(z.object({ fbAccountId: z.string(), name: z.string(), currency: z.string() })) }))
-    .mutation(async ({ ctx, input }) => {
-      const existing = new Set((await ctx.db.select({ fb: a.fbAccountId }).from(a)).map((x) => x.fb));
-      const fresh = input.accounts.filter((x) => !existing.has(x.fbAccountId));
-      if (fresh.length) await ctx.db.insert(a).values(fresh.map((x) => ({ ...x, ownership: "owned" as const })));
-      return { imported: fresh.length };
-    }),
 });

@@ -1,20 +1,21 @@
 import { initTRPC, TRPCError } from "@trpc/server";
-import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
+import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import superjson from "superjson";
 import { eq } from "drizzle-orm";
-import { db, schema } from "./db/index.js";
-import { readSession, SESSION_COOKIE } from "./auth.js";
-import type { Permission } from "../shared/constants.js";
+import { getDb, schema } from "./db";
+import { readCookie, readSession, SESSION_COOKIE } from "./auth";
+import type { Permission } from "../shared/constants";
 
-export async function createContext({ req, res }: CreateExpressContextOptions) {
-  const token = req.cookies?.[SESSION_COOKIE] as string | undefined;
+export async function createContext({ req, resHeaders }: FetchCreateContextFnOptions) {
+  const db = await getDb();
+  const token = readCookie(req.headers.get("cookie"), SESSION_COOKIE);
   const session = token ? readSession(token) : null;
   let user: typeof schema.users.$inferSelect | null = null;
   if (session) {
     const [row] = await db.select().from(schema.users).where(eq(schema.users.id, session.userId));
     if (row?.active) user = row;
   }
-  return { req, res, db, user };
+  return { resHeaders, db, user };
 }
 export type Context = Awaited<ReturnType<typeof createContext>>;
 

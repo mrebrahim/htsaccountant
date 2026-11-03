@@ -1,8 +1,7 @@
 import { z } from "zod";
-import { and, desc, eq, isNotNull, sql, type SQL } from "drizzle-orm";
-import { router, permitted, adminProcedure } from "../trpc.js";
-import { schema } from "../db/index.js";
-import { fbConfig, fbCampaigns } from "../facebook.js";
+import { and, desc, eq, sql, type SQL } from "drizzle-orm";
+import { router, permitted } from "../trpc";
+import { schema } from "../db";
 
 const c = schema.campaigns;
 
@@ -66,54 +65,4 @@ export const campaignsRouter = router({
     await ctx.db.delete(c).where(eq(c.id, input.id));
     return { ok: true };
   }),
-
-  /** Pull campaigns + lifetime performance from Facebook for every linked ad account (admins only). */
-  syncFromFacebook: adminProcedure
-    .input(z.object({ adAccountId: z.number().optional() }))
-    .mutation(async ({ ctx, input }) => {
-      const cfg = await fbConfig(ctx.db);
-      const accounts = await ctx.db
-        .select()
-        .from(schema.adAccounts)
-        .where(
-          and(
-            isNotNull(schema.adAccounts.fbAccountId),
-            input.adAccountId ? eq(schema.adAccounts.id, input.adAccountId) : undefined,
-          ),
-        );
-      let synced = 0;
-      const errors: string[] = [];
-      for (const acc of accounts) {
-        try {
-          const remote = await fbCampaigns(cfg, acc.fbAccountId!);
-          for (const r of remote) {
-            const now = new Date();
-            await ctx.db
-              .insert(c)
-              .values({ ...r, adAccountId: acc.id, customerId: acc.customerId, lastSyncedAt: now })
-              .onConflictDoUpdate({
-                target: c.fbCampaignId,
-                set: {
-                  name: r.name,
-                  status: r.status,
-                  objective: r.objective,
-                  budget: r.budget,
-                  spend: r.spend,
-                  impressions: r.impressions,
-                  clicks: r.clicks,
-                  results: r.results,
-                  startDate: r.startDate,
-                  endDate: r.endDate,
-                  adAccountId: acc.id,
-                  lastSyncedAt: now,
-                },
-              });
-            synced++;
-          }
-        } catch (e) {
-          errors.push(`${acc.name}: ${(e as Error).message}`);
-        }
-      }
-      return { synced, accounts: accounts.length, errors };
-    }),
 });

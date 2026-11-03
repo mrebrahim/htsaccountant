@@ -1,7 +1,6 @@
-import "dotenv/config";
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
-import * as schema from "./schema.js";
+import * as schema from "./schema";
 
 // prepare: false is required for Supabase's transaction pooler (port 6543).
 const options = { prepare: false as const, max: process.env.VERCEL ? 1 : 10 };
@@ -31,11 +30,22 @@ async function resolveDatabaseUrl(raw: string) {
   throw new Error(`Could not find a Supabase pooler in ${region} accepting these credentials`);
 }
 
-const raw = process.env.DATABASE_URL;
-if (!raw) throw new Error("DATABASE_URL is not set");
+function connect() {
+  const raw = process.env.DATABASE_URL;
+  if (!raw) throw new Error("DATABASE_URL is not set");
+  return resolveDatabaseUrl(raw).then((url) => drizzle(postgres(url, options), { schema }));
+}
 
-const client = postgres(await resolveDatabaseUrl(raw), options);
+export type DB = Awaited<ReturnType<typeof connect>>;
 
-export const db = drizzle(client, { schema });
-export type DB = typeof db;
+// One connection pool per server instance, created on first use.
+let pending: Promise<DB> | undefined;
+export function getDb() {
+  pending ??= connect().catch((e) => {
+    pending = undefined;
+    throw e;
+  });
+  return pending;
+}
+
 export { schema };

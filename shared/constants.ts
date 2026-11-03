@@ -8,19 +8,41 @@ export const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
   expense: "مصروف",
 };
 
-export const EXPENSE_CATEGORIES = ["fixed", "variable", "petty_cash", "customer", "campaign", "salaries"] as const;
-export const INCOME_CATEGORIES = ["customer_payment", "commission", "other_income"] as const;
+// Categories tailored to a digital marketing agency.
+export const EXPENSE_CATEGORIES = [
+  "ad_spend",
+  "salaries",
+  "freelancers",
+  "tools",
+  "fixed",
+  "variable",
+  "petty_cash",
+  "customer",
+] as const;
+export const INCOME_CATEGORIES = [
+  "retainer",
+  "ad_management",
+  "design_content",
+  "web_dev",
+  "commission",
+  "other_income",
+] as const;
 export const TRANSACTION_CATEGORIES = [...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES] as const;
 export type TransactionCategory = (typeof TRANSACTION_CATEGORIES)[number];
 
 export const CATEGORY_LABELS: Record<TransactionCategory, string> = {
-  fixed: "مصروفات ثابتة",
+  ad_spend: "صرف إعلانات / تمويل حسابات",
+  salaries: "رواتب وسلف",
+  freelancers: "فريلانسرز ومستقلين",
+  tools: "اشتراكات وأدوات وبرامج",
+  fixed: "مصروفات ثابتة (إيجار، كهرباء، إنترنت)",
   variable: "مصروفات متغيرة",
   petty_cash: "نثريات",
-  customer: "مصروفات عملاء",
-  campaign: "مصروفات حملات",
-  salaries: "رواتب وسلف",
-  customer_payment: "دفعات عملاء",
+  customer: "مصروفات على عملاء",
+  retainer: "باقات شهرية / عقود عملاء",
+  ad_management: "إدارة حملات إعلانية",
+  design_content: "تصميم ومحتوى وفيديو",
+  web_dev: "مواقع وبرمجة",
   commission: "عمولات",
   other_income: "إيرادات أخرى",
 };

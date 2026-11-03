@@ -1,4 +1,8 @@
-import "dotenv/config";
+try {
+  process.loadEnvFile();
+} catch {
+  // no .env file; rely on the environment
+}
 import { defineConfig } from "drizzle-kit";
 
 export default defineConfig({

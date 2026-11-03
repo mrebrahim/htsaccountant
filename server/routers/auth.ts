@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { eq, sql } from "drizzle-orm";
-import { router, publicProcedure, protectedProcedure } from "../trpc.js";
-import { schema } from "../db/index.js";
-import { hashPassword, verifyPassword, setSessionCookie, clearSessionCookie } from "../auth.js";
-import { PERMISSIONS } from "../../shared/constants.js";
+import { router, publicProcedure, protectedProcedure } from "../trpc";
+import { schema } from "../db";
+import { hashPassword, verifyPassword, setSessionCookie, clearSessionCookie } from "../auth";
+import { PERMISSIONS } from "../../shared/constants";
 
 const publicUser = (u: typeof schema.users.$inferSelect) => ({
   id: u.id,
@@ -36,7 +36,7 @@ export const authRouter = router({
           permissions: [...PERMISSIONS],
         })
         .returning();
-      setSessionCookie(ctx.res, user.id);
+      setSessionCookie(ctx.resHeaders, user.id);
       return publicUser(user);
     }),
 
@@ -46,12 +46,12 @@ export const authRouter = router({
       const [user] = await ctx.db.select().from(schema.users).where(eq(schema.users.email, input.email.toLowerCase()));
       if (!user || !user.active || !(await verifyPassword(input.password, user.passwordHash)))
         throw new TRPCError({ code: "UNAUTHORIZED", message: "البريد الإلكتروني أو كلمة المرور غير صحيحة" });
-      setSessionCookie(ctx.res, user.id);
+      setSessionCookie(ctx.resHeaders, user.id);
       return publicUser(user);
     }),
 
   logout: publicProcedure.mutation(({ ctx }) => {
-    clearSessionCookie(ctx.res);
+    clearSessionCookie(ctx.resHeaders);
     return { ok: true };
   }),
 

@@ -1,6 +1,10 @@
 node_modules
-dist
+
 .env
 .env.local
 .vercel
 *.log
+
+.next
+next-env.d.ts
+*.tsbuildinfo
